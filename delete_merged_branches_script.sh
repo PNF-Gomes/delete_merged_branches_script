@@ -4,13 +4,13 @@
 git fetch
 
 # Change 'master' to whatever branch you want to check against (e.g., 'main')
-BASE_BRANCH="main"
+BASE_BRANCH="master"
 
-# List branches that have been merged into master
-MERGED_BRANCHES=$(git branch -r --merged $BASE_BRANCH | grep -v "$BASE_BRANCH" | sed 's/origin\///' | tr -d ' ')
+# List branches that have been merged into master or whose tip is in master (indicating a potential rebase)
+MERGED_OR_REBASED_BRANCHES=$(git branch -r --merged $BASE_BRANCH | grep -v "$BASE_BRANCH" | sed 's/origin\///' | tr -d ' ')
 
-echo "Merged branches:"
-echo "$MERGED_BRANCHES"
+echo "Merged or potentially rebased branches:"
+echo "$MERGED_OR_REBASED_BRANCHES"
 
 # Ask user for confirmation
 read -p "Are you sure you want to delete these branches? (y/N) " -n 1 -r
@@ -18,7 +18,7 @@ echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    for branch in $MERGED_BRANCHES
+    for branch in $MERGED_OR_REBASED_BRANCHES
     do
         echo "Deleting branch $branch"
         git push origin --delete $branch
@@ -26,3 +26,4 @@ then
 else
     echo "No branches were deleted."
 fi
+

@@ -1,16 +1,25 @@
 #!/bin/bash
 
 # Fetch the latest info from the remote
-git fetch
+git fetch origin
 
 # Change 'master' to whatever branch you want to check against (e.g., 'main')
-BASE_BRANCH="main"
+BASE_BRANCH="master"
 
-# List branches that have been merged into master or whose tip is in master (indicating a potential rebase)
-MERGED_OR_REBASED_BRANCHES=$(git branch -r --merged $BASE_BRANCH | grep -v "$BASE_BRANCH" | sed 's/origin\///' | tr -d ' ')
+# List remote branches
+REMOTE_BRANCHES=$(git branch -r | grep -v "$BASE_BRANCH" | sed 's/origin\///' | tr -d ' ')
 
-echo "Merged or potentially rebased branches:"
-echo "$MERGED_OR_REBASED_BRANCHES"
+# Check each branch if it has been merged/rebased/squashed
+TO_DELETE=""
+for branch in $REMOTE_BRANCHES; do
+    # Check if the tip of the branch is in the main branch's history
+    if git merge-base --is-ancestor origin/$branch $BASE_BRANCH; then
+        TO_DELETE="$TO_DELETE $branch"
+    fi
+done
+
+echo "Merged, rebased, or squashed branches:"
+echo "$TO_DELETE"
 
 # Ask user for confirmation
 read -p "Are you sure you want to delete these branches? (y/N) " -n 1 -r
@@ -18,7 +27,7 @@ echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    for branch in $MERGED_OR_REBASED_BRANCHES
+    for branch in $TO_DELETE
     do
         echo "Deleting branch $branch"
         git push origin --delete $branch

@@ -4,7 +4,7 @@
 git fetch
 
 # Change 'master' to whatever branch you want to check against (e.g., 'main')
-BASE_BRANCH="master"
+BASE_BRANCH="main"
 
 # List branches that have been merged into master or whose tip is in master (indicating a potential rebase)
 MERGED_OR_REBASED_BRANCHES=$(git branch -r --merged $BASE_BRANCH | grep -v "$BASE_BRANCH" | sed 's/origin\///' | tr -d ' ')
